@@ -414,7 +414,7 @@ const additionTricks: Trick[] = [
       '234 + 156 = (200+100) + (30+50) + (4+6) = 300 + 80 + 10 = 390',
       '345 + 267 = (300+200) + (40+60) + (5+7) = 500 + 100 + 12 = 612',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
+    generateQuestion: (_difficulty: Difficulty) => {
       const firstNumber = Math.floor(Math.random() * 900) + 100
       const secondNumber = Math.floor(Math.random() * 900) + 100
       return {
