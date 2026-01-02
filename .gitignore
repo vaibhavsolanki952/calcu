@@ -1,0 +1,15 @@
+# Next.js Addition Speed Master
+
+node_modules/
+.next/
+dist/
+build/
+*.log
+.env.local
+.env.*.local
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
