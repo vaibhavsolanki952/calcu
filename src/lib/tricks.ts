@@ -441,7 +441,7 @@ const subtractionTricks: Trick[] = [
       '100 - 23 = 77',
     ],
     generateQuestion: (_difficulty: Difficulty) => {
-      const range = ranges[difficulty]
+      const range = ranges[_difficulty]
       const base = Math.floor(Math.random() * 10) * 10 || 10
       const firstNumber = base
       const secondNumber = Math.floor(Math.random() * (range.addMax - range.addMin + 1)) + range.addMin
@@ -718,7 +718,7 @@ const divisionTricks: Trick[] = [
       '92 ÷ 4 = 23',
       '75 ÷ 5 = 15',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
+    generateQuestion: (_difficulty: Difficulty) => {
       const divisor = Math.floor(Math.random() * 9) + 2
       const quotient = Math.floor(Math.random() * 50) + 1
       const firstNumber = divisor * quotient
