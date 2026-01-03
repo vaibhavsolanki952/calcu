@@ -3,13 +3,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Trick, Question } from '@/lib/tricks'
-import { Difficulty } from '@/lib/store'
+import { Level } from '@/lib/store'
 import Header from './Header'
 import { soundManager } from '@/lib/sound'
 
 interface GameScreenProps {
   trick: Trick
-  difficulty: Difficulty
+  level: Level
   onEnd: (correct: number, total: number) => void
   startTime: number
   onProgressUpdate?: (correct: number, questionsAnswered: number) => void
@@ -17,11 +17,11 @@ interface GameScreenProps {
   initialAnswered?: number
 }
 
-const QUESTIONS_PER_LEVEL = 100
+const QUESTIONS_PER_LEVEL = 25
 
 export default function GameScreen({
   trick,
-  difficulty,
+  level,
   onEnd,
   onProgressUpdate,
   initialCorrect = 0,
@@ -39,6 +39,16 @@ export default function GameScreen({
   useEffect(() => {
     generateNewQuestion()
   }, [])
+
+  // Auto-advance after feedback is shown
+  useEffect(() => {
+    if (showFeedback && feedback) {
+      const timer = setTimeout(() => {
+        handleNext()
+      }, 600)
+      return () => clearTimeout(timer)
+    }
+  }, [showFeedback, feedback])
 
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
@@ -69,7 +79,7 @@ export default function GameScreen({
     let q: Question
     let attempts = 0
     do {
-      q = trick.generateQuestion(difficulty)
+      q = trick.generateQuestion(level)
       attempts++
     } while (usedQuestions.has(q.key) && attempts < 100)
 
@@ -154,7 +164,8 @@ export default function GameScreen({
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
                 placeholder="Your answer"
-                className="w-full text-4xl font-light text-center py-4 border-b-2 border-gray-900 bg-transparent outline-none focus:border-indigo-600 transition-colors"
+                className="w-full text-4xl font-light text-center py-4 border-b-2 border-gray-900 bg-transparent outline-none focus:border-indigo-600 transition-colors [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                style={{ MozAppearance: 'textfield' }}
                 autoFocus
               />
               <motion.button
@@ -173,25 +184,9 @@ export default function GameScreen({
             animate={{ opacity: 1, scale: 1 }}
             className="w-full text-center"
           >
-            <div className="text-2xl font-light mb-6 text-gray-800">
+            <div className="text-2xl font-light text-gray-800">
               {feedback}
             </div>
-            <motion.form
-              onSubmit={(e) => {
-                e.preventDefault()
-                handleNext()
-              }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <motion.button
-                type="submit"
-                onClick={handleNext}
-                className="px-8 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
-              >
-                Next Question →
-              </motion.button>
-            </motion.form>
           </motion.div>
         ) : null}
       </div>

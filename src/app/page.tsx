@@ -1,66 +1,79 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import TipScreen from '@/components/TipScreen'
 import GameScreen from '@/components/GameScreen'
 import ResultScreen from '@/components/ResultScreen'
-import { Difficulty, useGameStore } from '@/lib/store'
+import { Level, useGameStore } from '@/lib/store'
 import { tricks } from '@/lib/tricks'
 
-const difficulties: Difficulty[] = ['scratch', 'beginner', 'medium', 'advanced']
+const TOTAL_LEVELS = 5 as const
 
 export default function AdditionTricks() {
   const [isHydrated, setIsHydrated] = useState(false)
-  const [screen, setScreen] = useState<'tip' | 'game' | 'result'>('tip')
-  const [currentTrickIndex, setCurrentTrickIndex] = useState(0)
-  const [currentDifficultyIndex, setCurrentDifficultyIndex] = useState(0)
+  const [screen, setScreen] = useState<'game' | 'result'>('game')
+  const [currentLevel, setCurrentLevel] = useState<Level>(1)
   const [startTime, setStartTime] = useState<number | null>(null)
   const [endTime, setEndTime] = useState<number | null>(null)
   const [lastGameStats, setLastGameStats] = useState<{ correct: number; total: number } | null>(null)
-  const { initializeTrick, updateProgress } = useGameStore()
+  const { initializeLevel, updateProgress } = useGameStore()
 
-  // Hydrate store from localStorage and check for incomplete games
+  const currentTrick = tricks[0] // Single trick for all levels
+
+  // Hydrate and check for incomplete games
   useEffect(() => {
     const store = useGameStore.getState()
     
     // Check if there's incomplete progress to resume
-    for (let i = 0; i < tricks.length; i++) {
-      const trick = tricks[i]
-      for (let d = 0; d < difficulties.length; d++) {
-        const difficulty = difficulties[d]
-        const progress = store.getProgress(trick.id, difficulty)
-        
-        // If progress exists but not completed, restore and resume
-        if (progress && !progress.completed && progress.questionsAnswered < 100) {
-          setCurrentTrickIndex(i)
-          setCurrentDifficultyIndex(d)
-          setStartTime(progress.startTime || Date.now())
-          setScreen('game')
-          setIsHydrated(true)
-          return
-        }
+    for (let level = 1; level <= TOTAL_LEVELS; level++) {
+      const levelNum = level as Level
+      const progress = store.getProgress(levelNum)
+      
+      // If progress exists but not completed, restore and resume
+      if (progress && !progress.completed && progress.questionsAnswered < 25) {
+        setCurrentLevel(levelNum)
+        setStartTime(progress.startTime || Date.now())
+        setScreen('game')
+        setIsHydrated(true)
+        return
       }
     }
     
+    // Check if all levels completed
+    let allCompleted = true
+    for (let level = 1; level <= TOTAL_LEVELS; level++) {
+      const levelNum = level as Level
+      const progress = store.getProgress(levelNum)
+      if (!progress.completed) {
+        allCompleted = false
+        break
+      }
+    }
+
+    if (!allCompleted) {
+      setCurrentLevel(1)
+      setStartTime(Date.now())
+      setScreen('game')
+    } else {
+      // All completed, show last level result
+      const lastProgress = store.getProgress(5)
+      if (lastProgress) {
+        setCurrentLevel(5)
+        setLastGameStats({ correct: lastProgress.correct, total: lastProgress.questionsAnswered })
+        setStartTime(lastProgress.startTime || 0)
+        setEndTime(lastProgress.endTime || 0)
+        setScreen('result')
+      }
+    }
+
     setIsHydrated(true)
   }, [])
-
-  const currentTrick = tricks[currentTrickIndex]
-  const currentDifficulty = difficulties[currentDifficultyIndex]
-
-  const handleStartGame = useCallback(() => {
-    initializeTrick(currentTrick.id)
-    setStartTime(Date.now())
-    setScreen('game')
-  }, [currentTrick.id, initializeTrick])
 
   const handleProgressUpdate = useCallback(
     (correct: number, questionsAnswered: number) => {
       // Save progress periodically during gameplay
       if (startTime) {
         updateProgress(
-          currentTrick.id,
-          currentDifficulty,
+          currentLevel,
           correct,
           questionsAnswered,
           startTime,
@@ -68,7 +81,7 @@ export default function AdditionTricks() {
         )
       }
     },
-    [currentTrick.id, currentDifficulty, startTime, updateProgress]
+    [currentLevel, startTime, updateProgress]
   )
 
   const handleGameEnd = useCallback(
@@ -80,8 +93,7 @@ export default function AdditionTricks() {
       // Save progress to localStorage via Zustand
       if (startTime) {
         updateProgress(
-          currentTrick.id,
-          currentDifficulty,
+          currentLevel,
           correct,
           total,
           startTime,
@@ -91,35 +103,34 @@ export default function AdditionTricks() {
       
       setScreen('result')
     },
-    [currentTrick.id, currentDifficulty, startTime, updateProgress]
+    [currentLevel, startTime, updateProgress]
   )
 
   const handleNextLevel = useCallback(() => {
-    // Move to next difficulty
-    if (currentDifficultyIndex < difficulties.length - 1) {
-      setCurrentDifficultyIndex((prev) => prev + 1)
-      setScreen('tip')
-    } else if (currentTrickIndex < tricks.length - 1) {
-      // Move to next trick
-      setCurrentTrickIndex((prev) => prev + 1)
-      setCurrentDifficultyIndex(0)
-      setScreen('tip')
+    // Move to next level
+    if (currentLevel < TOTAL_LEVELS) {
+      const nextLevel = (currentLevel + 1) as Level
+      setCurrentLevel(nextLevel)
+      setStartTime(Date.now())
+      setScreen('game')
+      initializeLevel(nextLevel)
     } else {
-      // All tricks completed - reset
-      setCurrentTrickIndex(0)
-      setCurrentDifficultyIndex(0)
-      setScreen('tip')
+      // All levels completed - restart
+      setCurrentLevel(1)
+      setStartTime(Date.now())
+      setScreen('game')
+      initializeLevel(1)
     }
-  }, [currentTrickIndex, currentDifficultyIndex])
+  }, [currentLevel, initializeLevel])
 
   const handleRestart = useCallback(() => {
-    setScreen('tip')
-    setCurrentTrickIndex(0)
-    setCurrentDifficultyIndex(0)
-    setStartTime(null)
-    setEndTime(null)
+    setCurrentLevel(1)
+    setStartTime(Date.now())
+    setScreen('game')
     setLastGameStats(null)
-  }, [])
+    setEndTime(null)
+    initializeLevel(1)
+  }, [initializeLevel])
 
   if (!isHydrated) {
     return null
@@ -127,26 +138,15 @@ export default function AdditionTricks() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4">
-      {screen === 'tip' && (
-        <TipScreen
-          trick={currentTrick}
-          difficulty={currentDifficulty}
-          trickIndex={currentTrickIndex + 1}
-          totalTricks={tricks.length}
-          difficultyIndex={currentDifficultyIndex + 1}
-          totalDifficulties={difficulties.length}
-          onStart={handleStartGame}
-        />
-      )}
       {screen === 'game' && startTime && (
         <GameScreen
           trick={currentTrick}
-          difficulty={currentDifficulty}
+          level={currentLevel}
           onEnd={handleGameEnd}
           startTime={startTime}
           onProgressUpdate={handleProgressUpdate}
-          initialCorrect={useGameStore.getState().getProgress(currentTrick.id, currentDifficulty)?.correct || 0}
-          initialAnswered={useGameStore.getState().getProgress(currentTrick.id, currentDifficulty)?.questionsAnswered || 0}
+          initialCorrect={useGameStore.getState().getProgress(currentLevel)?.correct || 0}
+          initialAnswered={useGameStore.getState().getProgress(currentLevel)?.questionsAnswered || 0}
         />
       )}
       {screen === 'result' && startTime && endTime && lastGameStats && (
@@ -154,7 +154,7 @@ export default function AdditionTricks() {
           correct={lastGameStats.correct}
           total={lastGameStats.total}
           timeTaken={endTime - startTime}
-          difficulty={currentDifficulty}
+          level={currentLevel}
           onNext={handleNextLevel}
           onRestart={handleRestart}
         />
@@ -162,4 +162,3 @@ export default function AdditionTricks() {
     </div>
   )
 }
-

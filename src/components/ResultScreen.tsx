@@ -1,13 +1,13 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Difficulty } from '@/lib/store'
+import { Level } from '@/lib/store'
 
 interface ResultScreenProps {
   correct: number
   total: number
   timeTaken: number
-  difficulty: Difficulty
+  level: Level
   onNext: () => void
   onRestart: () => void
 }
@@ -16,7 +16,7 @@ export default function ResultScreen({
   correct,
   total,
   timeTaken,
-  difficulty,
+  level,
   onNext,
   onRestart,
 }: ResultScreenProps) {
@@ -52,11 +52,12 @@ export default function ResultScreen({
   }
 
   const starDisplay = '⭐'.repeat(stars) + '☆'.repeat(5 - stars)
-  const difficultyLabels: Record<Difficulty, string> = {
-    scratch: 'Scratch',
-    beginner: 'Beginner',
-    medium: 'Medium',
-    advanced: 'Advanced',
+  const levelLabels: Record<Level, string> = {
+    1: 'Level 1: 1-digit × 1-digit',
+    2: 'Level 2: 2-digit × 1-digit',
+    3: 'Level 3: 3-digit × 1-digit',
+    4: 'Level 4: 3-digit × 2-digit',
+    5: 'Level 5: 4-digit × 2-digit',
   }
 
   const containerVariants = {
@@ -88,7 +89,7 @@ export default function ResultScreen({
           Level Complete! 🎉
         </motion.h1>
         <motion.p variants={itemVariants} className="text-gray-600 mb-8">
-          {difficultyLabels[difficulty]} Difficulty
+          {levelLabels[level]}
         </motion.p>
 
         <motion.div variants={itemVariants} className="my-12 space-y-8">

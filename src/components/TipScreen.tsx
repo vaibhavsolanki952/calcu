@@ -2,11 +2,11 @@
 
 import { motion } from 'framer-motion'
 import { Trick } from '@/lib/tricks'
-import { Difficulty } from '@/lib/store'
+import { Level } from '@/lib/store'
 
 interface TipScreenProps {
   trick: Trick
-  difficulty: Difficulty
+  level: Level
   trickIndex: number
   totalTricks: number
   difficultyIndex: number
@@ -14,16 +14,17 @@ interface TipScreenProps {
   onStart: () => void
 }
 
-const difficultyLabels: Record<Difficulty, string> = {
-  scratch: '🌱 Scratch - Start Here',
-  beginner: '🚀 Beginner',
-  medium: '⚡ Medium',
-  advanced: '🔥 Advanced',
+const levelLabels: Record<Level, string> = {
+  1: '🌱 Level 1 - 1-digit × 1-digit',
+  2: '🚀 Level 2 - 2-digit × 1-digit',
+  3: '⚡ Level 3 - 3-digit × 1-digit',
+  4: '💪 Level 4 - 3-digit × 2-digit',
+  5: '🔥 Level 5 - 4-digit × 2-digit',
 }
 
 export default function TipScreen({
   trick,
-  difficulty,
+  level,
   trickIndex,
   totalTricks,
   difficultyIndex,
@@ -65,7 +66,7 @@ export default function TipScreen({
             <span>Level {difficultyIndex}/{totalDifficulties}</span>
           </div>
           <div className="mt-3 px-3 py-1 bg-blue-50 text-blue-700 rounded text-sm font-medium inline-block">
-            {difficultyLabels[difficulty]}
+            {levelLabels[level]}
           </div>
         </motion.div>
 

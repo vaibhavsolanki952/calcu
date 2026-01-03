@@ -1,6 +1,6 @@
 'use client'
 
-import { Difficulty } from './store'
+import { Level } from './store'
 
 export type Trick = {
   id: string
@@ -8,7 +8,7 @@ export type Trick = {
   description: string
   examples: string[]
   subject: 'addition' | 'subtraction' | 'multiplication' | 'division'
-  generateQuestion: (difficulty: Difficulty) => Question
+  generateQuestion: (level: Level) => Question
 }
 
 export type Question = {
@@ -19,11 +19,13 @@ export type Question = {
   key: string
 }
 
-const ranges: Record<Difficulty, { min: number; max: number; addMin: number; addMax: number }> = {
-  scratch: { min: 1, max: 50, addMin: 1, addMax: 10 },
-  beginner: { min: 1, max: 100, addMin: 1, addMax: 20 },
-  medium: { min: 1, max: 500, addMin: 1, addMax: 50 },
-  advanced: { min: 1, max: 999, addMin: 1, addMax: 99 },
+// Levels: 1-digit × 1-digit, 2-digit × 1-digit, 3-digit × 1-digit, 3-digit × 2-digit, 4-digit × 2-digit
+const levelRanges: Record<Level, { firstMin: number; firstMax: number; secondMin: number; secondMax: number }> = {
+  1: { firstMin: 1, firstMax: 9, secondMin: 1, secondMax: 9 }, // 1-digit × 1-digit
+  2: { firstMin: 10, firstMax: 99, secondMin: 1, secondMax: 9 }, // 2-digit × 1-digit
+  3: { firstMin: 100, firstMax: 999, secondMin: 1, secondMax: 9 }, // 3-digit × 1-digit
+  4: { firstMin: 100, firstMax: 999, secondMin: 10, secondMax: 99 }, // 3-digit × 2-digit
+  5: { firstMin: 1000, firstMax: 9999, secondMin: 10, secondMax: 99 }, // 4-digit × 2-digit
 }
 
 // ADDITION TRICKS
@@ -38,11 +40,11 @@ const additionTricks: Trick[] = [
       '29 + 6 = (29 + 1) + 5 = 30 + 5 = 35',
       '49 + 8 = (49 + 1) + 7 = 50 + 7 = 57',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const base = Math.floor(Math.random() * (range.max / 10)) * 10
-      const firstNumber = base + 9
-      const secondNumber = Math.floor(Math.random() * (range.addMax - range.addMin + 1)) + range.addMin
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const base = Math.floor(Math.random() * ((range.firstMax - 9) / 10)) * 10
+      const firstNumber = Math.min(base + 9, range.firstMax)
+      const secondNumber = Math.floor(Math.random() * (range.secondMax - range.secondMin + 1)) + range.secondMin
       return {
         firstNumber,
         secondNumber,
@@ -62,11 +64,11 @@ const additionTricks: Trick[] = [
       '28 + 7 = (28 + 2) + 5 = 30 + 5 = 35',
       '38 + 9 = (38 + 2) + 7 = 40 + 7 = 47',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const base = Math.floor(Math.random() * (range.max / 10)) * 10
-      const firstNumber = base + 8
-      const secondNumber = Math.floor(Math.random() * (range.addMax - range.addMin + 1)) + range.addMin
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const base = Math.floor(Math.random() * ((range.firstMax - 8) / 10)) * 10
+      const firstNumber = Math.min(base + 8, range.firstMax)
+      const secondNumber = Math.floor(Math.random() * (range.secondMax - range.secondMin + 1)) + range.secondMin
       return {
         firstNumber,
         secondNumber,
@@ -86,11 +88,11 @@ const additionTricks: Trick[] = [
       '27 + 8 = (27 + 3) + 5 = 30 + 5 = 35',
       '37 + 9 = (37 + 3) + 6 = 40 + 6 = 46',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const base = Math.floor(Math.random() * (range.max / 10)) * 10
-      const firstNumber = base + 7
-      const secondNumber = Math.floor(Math.random() * (range.addMax - range.addMin + 1)) + range.addMin
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const base = Math.floor(Math.random() * ((range.firstMax - 7) / 10)) * 10
+      const firstNumber = Math.min(base + 7, range.firstMax)
+      const secondNumber = Math.floor(Math.random() * (range.secondMax - range.secondMin + 1)) + range.secondMin
       return {
         firstNumber,
         secondNumber,
@@ -110,11 +112,11 @@ const additionTricks: Trick[] = [
       '26 + 9 = (26 + 4) + 5 = 30 + 5 = 35',
       '36 + 8 = (36 + 4) + 4 = 40 + 4 = 44',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const base = Math.floor(Math.random() * (range.max / 10)) * 10
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const base = Math.floor(Math.random() * (range.firstMax / 10)) * 10
       const firstNumber = base + 6
-      const secondNumber = Math.floor(Math.random() * (range.addMax - range.addMin + 1)) + range.addMin
+      const secondNumber = Math.floor(Math.random() * (range.secondMax - range.secondMin + 1)) + range.secondMin
       return {
         firstNumber,
         secondNumber,
@@ -134,11 +136,11 @@ const additionTricks: Trick[] = [
       '25 + 9 = (25 + 5) + 4 = 30 + 4 = 34',
       '35 + 7 = (35 + 5) + 2 = 40 + 2 = 42',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const base = Math.floor(Math.random() * (range.max / 10)) * 10
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const base = Math.floor(Math.random() * (range.firstMax / 10)) * 10
       const firstNumber = base + 5
-      const secondNumber = Math.floor(Math.random() * (range.addMax - range.addMin + 1)) + range.addMin
+      const secondNumber = Math.floor(Math.random() * (range.secondMax - range.secondMin + 1)) + range.secondMin
       return {
         firstNumber,
         secondNumber,
@@ -158,11 +160,11 @@ const additionTricks: Trick[] = [
       '24 + 8 = (24 + 6) + 2 = 30 + 2 = 32',
       '34 + 7 = (34 + 6) + 1 = 40 + 1 = 41',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const base = Math.floor(Math.random() * (range.max / 10)) * 10
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const base = Math.floor(Math.random() * (range.firstMax / 10)) * 10
       const firstNumber = base + 4
-      const secondNumber = Math.floor(Math.random() * (range.addMax - range.addMin + 1)) + range.addMin
+      const secondNumber = Math.floor(Math.random() * (range.secondMax - range.secondMin + 1)) + range.secondMin
       return {
         firstNumber,
         secondNumber,
@@ -182,11 +184,11 @@ const additionTricks: Trick[] = [
       '23 + 9 = (23 + 7) + 2 = 30 + 2 = 32',
       '33 + 9 = (33 + 7) + 2 = 40 + 2 = 42',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const base = Math.floor(Math.random() * (range.max / 10)) * 10
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const base = Math.floor(Math.random() * (range.firstMax / 10)) * 10
       const firstNumber = base + 3
-      const secondNumber = Math.floor(Math.random() * (range.addMax - range.addMin + 1)) + range.addMin
+      const secondNumber = Math.floor(Math.random() * (range.secondMax - range.secondMin + 1)) + range.secondMin
       return {
         firstNumber,
         secondNumber,
@@ -206,11 +208,11 @@ const additionTricks: Trick[] = [
       '22 + 9 = (22 + 8) + 1 = 30 + 1 = 31',
       '32 + 8 = (32 + 8) + 0 = 40 + 0 = 40',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const base = Math.floor(Math.random() * (range.max / 10)) * 10
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const base = Math.floor(Math.random() * (range.firstMax / 10)) * 10
       const firstNumber = base + 2
-      const secondNumber = Math.floor(Math.random() * (range.addMax - range.addMin + 1)) + range.addMin
+      const secondNumber = Math.floor(Math.random() * (range.secondMax - range.secondMin + 1)) + range.secondMin
       return {
         firstNumber,
         secondNumber,
@@ -230,11 +232,11 @@ const additionTricks: Trick[] = [
       '21 + 9 = (21 + 9) + 0 = 30 + 0 = 30',
       '31 + 9 = (31 + 9) + 0 = 40 + 0 = 40',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const base = Math.floor(Math.random() * (range.max / 10)) * 10
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const base = Math.floor(Math.random() * (range.firstMax / 10)) * 10
       const firstNumber = base + 1
-      const secondNumber = Math.floor(Math.random() * (range.addMax - range.addMin + 1)) + range.addMin
+      const secondNumber = Math.floor(Math.random() * (range.secondMax - range.secondMin + 1)) + range.secondMin
       return {
         firstNumber,
         secondNumber,
@@ -254,10 +256,10 @@ const additionTricks: Trick[] = [
       '34 + 25 = (30 + 20) + (4 + 5) = 50 + 9 = 59',
       '41 + 37 = (40 + 30) + (1 + 7) = 70 + 8 = 78',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const firstNumber = Math.floor(Math.random() * (range.max - 10)) + 10
-      const secondNumber = Math.floor(Math.random() * (range.max - 10)) + 10
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const firstNumber = Math.floor(Math.random() * (range.firstMax - 10)) + 10
+      const secondNumber = Math.floor(Math.random() * (range.firstMax - 10)) + 10
       return {
         firstNumber,
         secondNumber,
@@ -277,11 +279,11 @@ const additionTricks: Trick[] = [
       '100 + 45 = 145',
       '200 + 78 = 278',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
       const roundNum = Math.floor(Math.random() * 10) * 100
       const firstNumber = roundNum || 50
-      const secondNumber = Math.floor(Math.random() * (range.addMax - range.addMin + 1)) + range.addMin
+      const secondNumber = Math.floor(Math.random() * (range.secondMax - range.secondMin + 1)) + range.secondMin
       return {
         firstNumber,
         secondNumber,
@@ -301,9 +303,9 @@ const additionTricks: Trick[] = [
       '45 + 11 = 56 (4+5=9, put between)',
       '34 + 11 = 45 (3+4=7, put between)',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const firstNumber = Math.floor(Math.random() * (range.max - 10)) + 10
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const firstNumber = Math.floor(Math.random() * (range.firstMax - 10)) + 10
       const secondNumber = 11
       return {
         firstNumber,
@@ -324,7 +326,7 @@ const additionTricks: Trick[] = [
       '9 + 6 = 9 + 1 + 5 = 10 + 5 = 15',
       '7 + 8 = 7 + 3 + 5 = 10 + 5 = 15',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
+    generateQuestion: (_level: Level) => {
       const firstNumber = Math.floor(Math.random() * 9) + 1
       const secondNumber = Math.floor(Math.random() * 9) + 1
       return {
@@ -346,7 +348,7 @@ const additionTricks: Trick[] = [
       '96 + 95 = (100-4) + (100-5) = 200 - 9 = 191',
       '99 + 99 = (100-1) + (100-1) = 200 - 2 = 198',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
+    generateQuestion: (_level: Level) => {
       const firstNumber = Math.floor(Math.random() * 20) + 80
       const secondNumber = Math.floor(Math.random() * 20) + 80
       return {
@@ -368,7 +370,7 @@ const additionTricks: Trick[] = [
       '45 + 55 = (9+11) × 5 = 20 × 5 = 100',
       '15 + 20 = (3+4) × 5 = 7 × 5 = 35',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
+    generateQuestion: (_level: Level) => {
       const a = Math.floor(Math.random() * 20) + 1
       const b = Math.floor(Math.random() * 20) + 1
       const firstNumber = a * 5
@@ -392,10 +394,10 @@ const additionTricks: Trick[] = [
       '23 + 24 = 47',
       '34 + 35 = 69',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const firstNumber = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min
-      const secondNumber = Math.floor(Math.random() * (range.addMax - range.addMin + 1)) + range.addMin
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const firstNumber = Math.floor(Math.random() * (range.firstMax - range.firstMin + 1)) + range.firstMin
+      const secondNumber = Math.floor(Math.random() * (range.secondMax - range.secondMin + 1)) + range.secondMin
       return {
         firstNumber,
         secondNumber,
@@ -414,7 +416,7 @@ const additionTricks: Trick[] = [
       '234 + 156 = (200+100) + (30+50) + (4+6) = 300 + 80 + 10 = 390',
       '345 + 267 = (300+200) + (40+60) + (5+7) = 500 + 100 + 12 = 612',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
+    generateQuestion: (_level: Level) => {
       const firstNumber = Math.floor(Math.random() * 900) + 100
       const secondNumber = Math.floor(Math.random() * 900) + 100
       return {
@@ -440,11 +442,11 @@ const subtractionTricks: Trick[] = [
       '50 - 12 = 38',
       '100 - 23 = 77',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
-      const range = ranges[_difficulty]
+    generateQuestion: (_level: Level) => {
+      const range = levelRanges[_level]
       const base = Math.floor(Math.random() * 10) * 10 || 10
       const firstNumber = base
-      const secondNumber = Math.floor(Math.random() * (range.addMax - range.addMin + 1)) + range.addMin
+      const secondNumber = Math.floor(Math.random() * (range.secondMax - range.secondMin + 1)) + range.secondMin
       return {
         firstNumber,
         secondNumber,
@@ -463,9 +465,9 @@ const subtractionTricks: Trick[] = [
       '50 - 23 = ? (23 + ? = 50, so ? = 27)',
       '100 - 34 = ? (34 + ? = 100, so ? = 66)',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const firstNumber = Math.floor(Math.random() * (range.max - 50)) + 50
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const firstNumber = Math.floor(Math.random() * (range.firstMax - 50)) + 50
       const secondNumber = Math.floor(Math.random() * (firstNumber - 1)) + 1
       return {
         firstNumber,
@@ -486,9 +488,9 @@ const subtractionTricks: Trick[] = [
       '50 - 48 = 2',
       '73 - 71 = 2',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const firstNumber = Math.floor(Math.random() * (range.max - 20)) + 20
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const firstNumber = Math.floor(Math.random() * (range.firstMax - 20)) + 20
       const secondNumber = firstNumber - Math.floor(Math.random() * 10) - 1
       return {
         firstNumber,
@@ -509,9 +511,9 @@ const subtractionTricks: Trick[] = [
       '47 - 23 = 24',
       '69 - 34 = 35',
     ],
-    generateQuestion: (difficulty: Difficulty) => {
-      const range = ranges[difficulty]
-      const firstNumber = Math.floor(Math.random() * (range.max - 20)) + 20
+    generateQuestion: (level: Level) => {
+      const range = levelRanges[level]
+      const firstNumber = Math.floor(Math.random() * (range.firstMax - 20)) + 20
       const secondNumber = Math.floor(Math.random() * firstNumber)
       return {
         firstNumber,
@@ -536,7 +538,7 @@ const multiplicationTricks: Trick[] = [
       '45 × 11 = 495 (4_5 → 4+5=9 → 495)',
       '34 × 11 = 374 (3_4 → 3+4=7 → 374)',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
+    generateQuestion: (_level: Level) => {
       const firstNumber = Math.floor(Math.random() * 89) + 10
       const secondNumber = 11
       return {
@@ -558,7 +560,7 @@ const multiplicationTricks: Trick[] = [
       '46 × 5 = 460 ÷ 2 = 230',
       '38 × 5 = 380 ÷ 2 = 190',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
+    generateQuestion: (_level: Level) => {
       const firstNumber = Math.floor(Math.random() * 90) + 10
       const secondNumber = 5
       return {
@@ -580,7 +582,7 @@ const multiplicationTricks: Trick[] = [
       '7 × 9 = 63 (7-1=6, 9-6=3 → 63)',
       '8 × 9 = 72 (8-1=7, 9-7=2 → 72)',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
+    generateQuestion: (_level: Level) => {
       const firstNumber = Math.floor(Math.random() * 8) + 2
       const secondNumber = 9
       return {
@@ -602,7 +604,7 @@ const multiplicationTricks: Trick[] = [
       '45 × 100 = 4500',
       '12 × 10 = 120',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
+    generateQuestion: (_level: Level) => {
       const firstNumber = Math.floor(Math.random() * 90) + 10
       const multiplier = Math.random() > 0.5 ? 10 : 100
       return {
@@ -624,7 +626,7 @@ const multiplicationTricks: Trick[] = [
       '52² = 2704 (52 = 50+2, so 2500 + 200 + 4)',
       '51² = 2601 (51 = 50+1, so 2500 + 100 + 1)',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
+    generateQuestion: (_level: Level) => {
       const offset = Math.floor(Math.random() * 9) - 4
       const firstNumber = 50 + offset
       return {
@@ -646,7 +648,7 @@ const multiplicationTricks: Trick[] = [
       '23 × 4 = 92',
       '15 × 5 = 75',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
+    generateQuestion: (_level: Level) => {
       const firstNumber = Math.floor(Math.random() * 89) + 11
       const secondNumber = Math.floor(Math.random() * 9) + 2
       return {
@@ -672,7 +674,7 @@ const divisionTricks: Trick[] = [
       '250 ÷ 5 = 250 × 2 ÷ 10 = 500 ÷ 10 = 50',
       '35 ÷ 5 = 35 × 2 ÷ 10 = 70 ÷ 10 = 7',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
+    generateQuestion: (_level: Level) => {
       const divisor = 5
       const quotient = Math.floor(Math.random() * 50) + 1
       const firstNumber = divisor * quotient
@@ -695,7 +697,7 @@ const divisionTricks: Trick[] = [
       '4500 ÷ 100 = 45',
       '1200 ÷ 10 = 120',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
+    generateQuestion: (_level: Level) => {
       const quotient = Math.floor(Math.random() * 90) + 10
       const divisor = Math.random() > 0.5 ? 10 : 100
       const firstNumber = quotient * divisor
@@ -718,7 +720,7 @@ const divisionTricks: Trick[] = [
       '92 ÷ 4 = 23',
       '75 ÷ 5 = 15',
     ],
-    generateQuestion: (_difficulty: Difficulty) => {
+    generateQuestion: (_level: Level) => {
       const divisor = Math.floor(Math.random() * 9) + 2
       const quotient = Math.floor(Math.random() * 50) + 1
       const firstNumber = divisor * quotient

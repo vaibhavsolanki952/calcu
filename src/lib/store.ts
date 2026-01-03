@@ -3,10 +3,10 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export type Difficulty = 'scratch' | 'beginner' | 'medium' | 'advanced'
+export type Level = 1 | 2 | 3 | 4 | 5
 
 export interface LevelProgress {
-  difficulty: Difficulty
+  level: Level
   questionsAnswered: number
   correct: number
   startTime: number | null
@@ -14,163 +14,92 @@ export interface LevelProgress {
   completed: boolean
 }
 
-export interface TrickProgress {
-  trickId: string
-  levels: Record<Difficulty, LevelProgress>
-  allCompleted: boolean
-}
-
 interface GameStore {
-  progress: Record<string, TrickProgress>
-  currentTrickId: string | null
-  currentDifficulty: Difficulty
+  currentLevel: Level
+  levelProgress: Record<Level, LevelProgress>
   totalQuestionsCompleted: number
   totalCorrect: number
 
-  initializeTrick: (trickId: string) => void
+  initializeLevel: (level: Level) => void
   updateProgress: (
-    trickId: string,
-    difficulty: Difficulty,
+    level: Level,
     correct: number,
     questionsAnswered: number,
     startTime: number,
     endTime: number
   ) => void
-  setCurrentTrick: (trickId: string) => void
-  setCurrentDifficulty: (difficulty: Difficulty) => void
-  getProgress: (trickId: string, difficulty: Difficulty) => LevelProgress | null
+  setCurrentLevel: (level: Level) => void
+  getProgress: (level: Level) => LevelProgress
   reset: () => void
 }
+
+const createLevelProgress = (level: Level): LevelProgress => ({
+  level,
+  questionsAnswered: 0,
+  correct: 0,
+  startTime: null,
+  endTime: null,
+  completed: false,
+})
 
 export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
-      progress: {},
-      currentTrickId: null,
-      currentDifficulty: 'scratch',
+      currentLevel: 1,
+      levelProgress: {
+        1: createLevelProgress(1),
+        2: createLevelProgress(2),
+        3: createLevelProgress(3),
+        4: createLevelProgress(4),
+        5: createLevelProgress(5),
+      },
       totalQuestionsCompleted: 0,
       totalCorrect: 0,
 
-      initializeTrick: (trickId: string) => {
+      initializeLevel: (level: Level) => {
         set((state) => {
-          if (!state.progress[trickId]) {
-            state.progress[trickId] = {
-              trickId,
-              levels: {
-                scratch: {
-                  difficulty: 'scratch',
-                  questionsAnswered: 0,
-                  correct: 0,
-                  startTime: null,
-                  endTime: null,
-                  completed: false,
-                },
-                beginner: {
-                  difficulty: 'beginner',
-                  questionsAnswered: 0,
-                  correct: 0,
-                  startTime: null,
-                  endTime: null,
-                  completed: false,
-                },
-                medium: {
-                  difficulty: 'medium',
-                  questionsAnswered: 0,
-                  correct: 0,
-                  startTime: null,
-                  endTime: null,
-                  completed: false,
-                },
-                advanced: {
-                  difficulty: 'advanced',
-                  questionsAnswered: 0,
-                  correct: 0,
-                  startTime: null,
-                  endTime: null,
-                  completed: false,
-                },
-              },
-              allCompleted: false,
-            }
+          if (!state.levelProgress[level].startTime) {
+            state.levelProgress[level].startTime = Date.now()
           }
           return state
         })
       },
 
-      updateProgress: (trickId, difficulty, correct, questionsAnswered, startTime, endTime) => {
+      updateProgress: (level, correct, questionsAnswered, startTime, endTime) => {
         set((state) => {
-          if (!state.progress[trickId]) {
-            state.progress[trickId] = {
-              trickId,
-              levels: {
-                scratch: {
-                  difficulty: 'scratch',
-                  questionsAnswered: 0,
-                  correct: 0,
-                  startTime: null,
-                  endTime: null,
-                  completed: false,
-                },
-                beginner: {
-                  difficulty: 'beginner',
-                  questionsAnswered: 0,
-                  correct: 0,
-                  startTime: null,
-                  endTime: null,
-                  completed: false,
-                },
-                medium: {
-                  difficulty: 'medium',
-                  questionsAnswered: 0,
-                  correct: 0,
-                  startTime: null,
-                  endTime: null,
-                  completed: false,
-                },
-                advanced: {
-                  difficulty: 'advanced',
-                  questionsAnswered: 0,
-                  correct: 0,
-                  startTime: null,
-                  endTime: null,
-                  completed: false,
-                },
-              },
-              allCompleted: false,
-            }
-          }
-          
-          state.progress[trickId].levels[difficulty] = {
-            difficulty,
+          state.levelProgress[level] = {
+            level,
             questionsAnswered,
             correct,
             startTime,
             endTime,
-            completed: true,
+            completed: questionsAnswered >= 25,
           }
-          
+          state.totalQuestionsCompleted += 1
+          state.totalCorrect += (correct > 0 ? 1 : 0)
           return state
         })
       },
 
-      setCurrentTrick: (trickId: string) => {
-        set({ currentTrickId: trickId })
+      setCurrentLevel: (level: Level) => {
+        set({ currentLevel: level })
       },
 
-      setCurrentDifficulty: (difficulty: Difficulty) => {
-        set({ currentDifficulty: difficulty })
-      },
-
-      getProgress: (trickId: string, difficulty: Difficulty) => {
+      getProgress: (level: Level) => {
         const state = get()
-        return state.progress[trickId]?.levels[difficulty] || null
+        return state.levelProgress[level]
       },
 
       reset: () => {
         set({
-          progress: {},
-          currentTrickId: null,
-          currentDifficulty: 'scratch',
+          currentLevel: 1,
+          levelProgress: {
+            1: createLevelProgress(1),
+            2: createLevelProgress(2),
+            3: createLevelProgress(3),
+            4: createLevelProgress(4),
+            5: createLevelProgress(5),
+          },
           totalQuestionsCompleted: 0,
           totalCorrect: 0,
         })
